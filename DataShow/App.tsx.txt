@@ -1,0 +1,180 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useEffect, useState } from 'react';
+import { IntroductionTab } from './components/IntroductionTab';
+import { Explorer3DTab } from './components/Explorer3DTab';
+import { ComponentsTab } from './components/ComponentsTab';
+import { LightPathTab } from './components/LightPathTab';
+import { PracticalTab } from './components/PracticalTab';
+import { QuizTab } from './components/QuizTab';
+
+export type AppSectionId =
+  | 'intro'
+  | 'explorer3d'
+  | 'components'
+  | 'lightpath'
+  | 'practical'
+  | 'quiz';
+
+const NAV_TABS: Array<{ id: AppSectionId; labelAr: string }> = [
+  { id: 'intro', labelAr: 'المقدمة' },
+  { id: 'explorer3d', labelAr: 'المستكشف 3D' },
+  { id: 'components', labelAr: 'المكونات والمنافذ' },
+  { id: 'lightpath', labelAr: 'مسار الضوء' },
+  { id: 'practical', labelAr: 'التجربة العملية' },
+  { id: 'quiz', labelAr: 'الاختبار' },
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState<AppSectionId>('intro');
+  const [isDark, setIsDark] = useState<boolean>(false);
+  const [inspectedPartId, setInspectedPartId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [isDark]);
+
+  const handleInspectPartIn3D = (partId: string) => {
+    setInspectedPartId(partId);
+    setActiveTab('explorer3d');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectTab = (tabId: AppSectionId) => {
+    setActiveTab(tabId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div dir="rtl" className="min-h-screen flex flex-col bg-[var(--c-bg)] text-[var(--c-text)]">
+      {/* Clean 3-Zone Top Navigation Bar (RTL) */}
+      <header className="sticky top-0 z-40 bg-[var(--c-bg)] border-b border-[var(--c-border)] transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4 sm:gap-8">
+          {/* Zone 1: Single-line Brand Wordmark */}
+          <a
+            href="#top"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSelectTab('intro');
+            }}
+            className="text-base sm:text-lg font-bold tracking-tight text-[var(--c-primary)] whitespace-nowrap shrink-0"
+          >
+            موسوعة الداتا شو
+          </a>
+
+          {/* Zone 2: Desktop Navigation Tabs (Clean single-line typography) */}
+          <nav
+            aria-label="أقسام التطبيق الرئيسية"
+            className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-semibold"
+          >
+            {NAV_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleSelectTab(tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`py-1.5 border-b-2 transition-colors duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
+                    isActive
+                      ? 'border-[var(--c-primary)] text-[var(--c-primary)]'
+                      : 'border-transparent text-[var(--c-text-muted)] hover:text-[var(--c-text)]'
+                  }`}
+                >
+                  {tab.labelAr}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Zone 3: Single Primary Action (Light / Dark Mode Toggle strictly in 2-color palette) */}
+          <div className="flex items-center shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsDark((prev) => !prev)}
+              aria-label={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'}
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-[var(--c-border-strong)] bg-[var(--c-surface)] text-[var(--c-text)] hover:bg-[var(--c-primary-soft)] transition-colors duration-300 cursor-pointer whitespace-nowrap shrink-0"
+            >
+              {isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Compact Horizontal Section Switcher (Non-sticky so sticky cap stays <= 15%) */}
+      <nav
+        aria-label="تنقل الأقسام للهاتف"
+        className="md:hidden border-b border-[var(--c-border)] bg-[var(--c-surface)] px-3 py-2 overflow-x-auto"
+      >
+        <div className="flex items-center gap-1.5 min-w-max">
+          {NAV_TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleSelectTab(tab.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? 'bg-[var(--c-primary)] text-[var(--c-on-primary)]'
+                    : 'text-[var(--c-text-muted)] hover:text-[var(--c-text)]'
+                }`}
+              >
+                {tab.labelAr}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Main Content View */}
+      <main id="top" className="flex-1">
+        {activeTab === 'intro' && (
+          <IntroductionTab
+            onNavigateTo3D={() => handleSelectTab('explorer3d')}
+            onNavigateToPractical={() => handleSelectTab('practical')}
+          />
+        )}
+        {activeTab === 'explorer3d' && (
+          <Explorer3DTab isDark={isDark} initialSelectedPartId={inspectedPartId} />
+        )}
+        {activeTab === 'components' && (
+          <ComponentsTab onInspectIn3D={handleInspectPartIn3D} />
+        )}
+        {activeTab === 'lightpath' && (
+          <LightPathTab onInspectComponentIn3D={handleInspectPartIn3D} />
+        )}
+        {activeTab === 'practical' && <PracticalTab />}
+        {activeTab === 'quiz' && (
+          <QuizTab onReviewExplorer={() => handleSelectTab('explorer3d')} />
+        )}
+      </main>
+
+      {/* Quiet Educational Footer */}
+      <footer className="border-t border-[var(--c-border)] bg-[var(--c-surface)] py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--c-text-muted)]">
+          <div>
+            الموسوعة التعليمية التفاعلية لجهاز العرض الضوئي (Data Show) — محاكاة بصرية وهندسية ثلاثية الأبعاد
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="/standalone-datashow.html"
+              download="data-show-interactive-ar.html"
+              className="font-semibold text-[var(--c-primary)] hover:underline whitespace-nowrap"
+            >
+              تحميل النسخة المستقلة بملف HTML واحد
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
